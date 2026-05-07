@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gladijatorski Život — Ratnici Starog Rima</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Archivo:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Tokeni ───────────────────────────────────────────── */
+    :root {
+      --gold:        #E8C96B;
+      --gold-light:  #F5DF9A;
+      --gold-dim:    rgba(232,201,107,0.12);
+      --gold-border: rgba(232,201,107,0.22);
+      --rgb:         232,201,107;
+      --bg:          #1a1712;
+      --bg2:         #221f19;
+      --card:        rgba(34,31,25,0.78);
+      --line:        rgba(255,255,255,0.07);
+      --line-gold:   rgba(232,201,107,0.18);
+      --t1:          #F0EDE6;
+      --t2:          rgba(240,237,230,0.52);
+      --t3:          rgba(240,237,230,0.28);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: auto; }
+    body {
+      background: var(--bg);
+      color: var(--t1);
+      font-family: 'Archivo', sans-serif;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+    ::selection { background: var(--gold); color: #000; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #111; }
+    ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 2px; }
+
+    /* ─── Starscape ────────────────────────────────────────── */
+    #starscape {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0; pointer-events: none; opacity: 0.4;
+    }
+
+    /* ─── Loader ───────────────────────────────────────────── */
+    #loader {
+      position: fixed; inset: 0; background: var(--bg2);
+      z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 0;
+      transition: opacity 0.8s ease;
+    }
+    .loader-roman {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.65rem; letter-spacing: 0.5em;
+      text-transform: uppercase; color: var(--t3);
+      margin-bottom: 20px;
+    }
+    .loader-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2rem; font-weight: 700;
+      letter-spacing: 0.08em; color: var(--gold);
+      margin-bottom: 4px;
+    }
+    .loader-sub {
+      font-family: 'Archivo', sans-serif; font-style: italic;
+      font-size: 0.88rem; color: var(--t3);
+      margin-bottom: 40px; letter-spacing: 0.04em;
+    }
+    .loader-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem; letter-spacing: 0.28em;
+      text-transform: uppercase; color: var(--t3);
+      margin-bottom: 12px;
+    }
+    .bar-track {
+      width: 180px; height: 1px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 1px; overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--gold), var(--gold-light));
+      transition: width 0.2s ease;
+    }
+
+    /* ─── Progress bar ─────────────────────────────────────── */
+    #scrollBar {
+      position: fixed; top: 0; left: 0; height: 2px; width: 0%;
+      background: linear-gradient(90deg, var(--gold), var(--gold-light));
+      z-index: 10000; transition: width 0.06s linear;
+    }
+
+    /* ─── Navbar ───────────────────────────────────────────── */
+    #nav {
+      position: fixed; top: 14px; left: 0; right: 0; z-index: 1000;
+      transition: all 0.45s cubic-bezier(0.16,1,0.3,1);
+    }
+    .nav-in {
+      max-width: 100%; margin: 0 auto; padding: 14px 44px;
+      display: flex; justify-content: space-between; align-items: center;
+      transition: all 0.45s cubic-bezier(0.16,1,0.3,1);
+    }
+    #nav.scrolled .nav-in {
+      max-width: 940px;
+      background: rgba(9,8,6,0.8);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+      border-radius: 100px; padding: 10px 30px;
+    }
+    .nav-brand {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.88rem; font-weight: 700;
+      letter-spacing: 0.12em; color: var(--gold);
+      text-transform: uppercase;
+    }
+    .nav-brand span { color: var(--t3); font-weight: 400; }
+    .nav-links { display: flex; gap: 32px; align-items: center; }
+    .nav-links a {
+      color: var(--t2); text-decoration: none;
+      font-size: 0.82rem; letter-spacing: 0.03em;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--t1); }
+    @media (max-width: 860px) { .nav-links { display: none; } }
+
+    /* ─── Ornament ─────────────────────────────────────────── */
+    .ornament {
+      display: flex; align-items: center; gap: 16px;
+      justify-content: center; margin: 0 auto 28px;
+      max-width: 320px;
+    }
+    .ornament-line { flex: 1; height: 1px; background: var(--line-gold); }
+    .ornament-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--gold); opacity: 0.7;
+    }
+
+    /* ─── Hero ─────────────────────────────────────────────── */
+    #hero {
+      position: relative; min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; z-index: 1;
+    }
+    .hero-bg { position: absolute; inset: 0; pointer-events: none; }
+    .orb {
+      position: absolute; border-radius: 50%; filter: blur(110px);
+      pointer-events: none;
+    }
+    .orb-1 { width: 700px; height: 700px; background: var(--gold); top: -300px; right: -180px; opacity: 0.08; }
+    .orb-2 { width: 500px; height: 500px; background: var(--gold); bottom: -200px; left: -150px; opacity: 0.06; }
+    .grid-over {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px);
+      background-size: 72px 72px;
+    }
+    .hero-content {
+      position: relative; z-index: 2;
+      text-align: center; padding: 0 28px; max-width: 920px;
+    }
+    .hero-kicker {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.66rem; letter-spacing: 0.38em;
+      text-transform: uppercase; color: var(--gold);
+      margin-bottom: 28px; display: block; opacity: 0.85;
+    }
+    h1.hero-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(3.5rem, 10vw, 7.5rem);
+      font-weight: 700; line-height: 0.95;
+      letter-spacing: -0.03em; margin-bottom: 12px;
+    }
+    h1.hero-title em { font-style: normal; color: var(--gold); }
+    .hero-latin {
+      font-family: 'Archivo', sans-serif; font-style: italic;
+      font-size: clamp(1rem, 2vw, 1.3rem);
+      color: var(--t3); margin-bottom: 28px; display: block;
+      letter-spacing: 0.04em;
+    }
+    .hero-sub {
+      font-size: clamp(1rem, 1.8vw, 1.18rem);
+      color: var(--t2); max-width: 640px;
+      margin: 0 auto 48px; line-height: 1.75;
+    }
+    .hero-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-block; text-decoration: none;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.9rem; font-weight: 600;
+      padding: 13px 36px; border-radius: 10px;
+      transition: all 0.3s ease; cursor: pointer; border: none;
+    }
+    .btn-gold {
+      background: var(--gold); color: #000;
+      box-shadow: 0 0 28px rgba(var(--rgb),0.22);
+    }
+    .btn-gold:hover { box-shadow: 0 0 48px rgba(var(--rgb),0.42); transform: translateY(-2px); }
+    .btn-ghost {
+      background: transparent; color: var(--t1);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .btn-ghost:hover { border-color: var(--gold-border); color: var(--gold); }
+    .scroll-hint {
+      margin-top: 80px;
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      color: var(--t3); font-size: 0.66rem;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .arrow {
+      width: 16px; height: 16px;
+      border-right: 1px solid var(--t3); border-bottom: 1px solid var(--t3);
+      transform: rotate(45deg);
+      animation: bob 1.8s ease-in-out infinite;
+    }
+    @keyframes bob {
+      0%,100% { transform: rotate(45deg) translateY(0); opacity: 0.35; }
+      50%      { transform: rotate(45deg) translateY(6px); opacity: 0.9; }
+    }
+
+    /* ─── Scroll animation ─────────────────────────────────── */
+    .reel { height: 430vh; position: relative; z-index: 1; }
+    .reel-sticky {
+      position: sticky; top: 0; height: 100vh; width: 100%; overflow: hidden;
+    }
+    #fc { position: absolute; top: 0; left: 0; }
+    .reel-vignette {
+      position: absolute; inset: 0; z-index: 5; pointer-events: none;
+      background: linear-gradient(
+        to bottom,
+        rgba(26,23,18,0.45) 0%,
+        rgba(26,23,18,0.08) 35%,
+        rgba(26,23,18,0.08) 65%,
+        rgba(26,23,18,0.5) 100%
+      );
+    }
+    .reel-card {
+      position: absolute; bottom: 9vh; left: 5vw; max-width: 400px;
+      background: rgba(9,8,6,0.78);
+      border: 1px solid var(--gold-border);
+      backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+      border-radius: 18px; padding: 30px;
+      opacity: 0; transform: translateY(20px) scale(0.98);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      pointer-events: none; z-index: 10;
+    }
+    .reel-card.on { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+    .rc-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem; color: var(--gold);
+      letter-spacing: 0.25em; margin-bottom: 12px; display: block;
+    }
+    .rc-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.2rem; font-weight: 600; margin-bottom: 10px;
+    }
+    .rc-body {
+      font-size: 0.86rem; color: var(--t2); line-height: 1.6; margin-bottom: 20px;
+    }
+    .rc-stat { display: flex; align-items: baseline; gap: 8px; }
+    .rc-big {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2.2rem; font-weight: 700; color: var(--gold); line-height: 1;
+    }
+    .rc-lbl { font-size: 0.76rem; color: var(--t3); }
+    @media (max-width: 768px) {
+      .reel { height: 290vh; }
+      .reel-card {
+        bottom: 2vh; left: 2vw; right: 2vw; max-width: none;
+        padding: 14px 18px; border-radius: 14px;
+        flex-direction: row; display: flex; align-items: center; gap: 14px;
+      }
+      .rc-body, .rc-stat { display: none; }
+      .rc-num { margin-bottom: 0; font-size: 0.58rem; }
+      .rc-title { font-size: 0.9rem; margin-bottom: 0; }
+    }
+    @media (max-width: 1024px) and (min-width: 769px) { .reel { height: 340vh; } }
+
+    /* ─── Shared section ───────────────────────────────────── */
+    .sec {
+      position: relative; z-index: 1;
+      padding: 130px 32px;
+      border-top: 1px solid var(--line);
+    }
+    .sec-head { text-align: center; margin-bottom: 80px; }
+    .sec-chapter {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem; letter-spacing: 0.45em;
+      text-transform: uppercase; color: var(--t3);
+      display: block; margin-bottom: 8px;
+    }
+    .sec-kicker {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem; letter-spacing: 0.32em;
+      text-transform: uppercase; color: var(--gold);
+      display: block; margin-bottom: 18px;
+    }
+    h2.sec-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(2rem, 4.5vw, 3.2rem);
+      font-weight: 700; line-height: 1.08;
+      letter-spacing: -0.02em; margin-bottom: 18px;
+    }
+    .sec-sub {
+      color: var(--t2); font-size: 1.02rem;
+      max-width: 600px; margin: 0 auto; line-height: 1.72;
+    }
+    .quote-block {
+      max-width: 680px; margin: 64px auto;
+      border-left: 2px solid var(--gold);
+      padding: 20px 32px;
+      background: rgba(232,201,107,0.04);
+      border-radius: 0 12px 12px 0;
+    }
+    .quote-block p {
+      font-style: italic; font-size: 1.05rem;
+      color: var(--t2); line-height: 1.72; margin-bottom: 12px;
+    }
+    .quote-block cite {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem; color: var(--gold);
+      letter-spacing: 0.12em; font-style: normal;
+    }
+
+    /* ─── Tko su bili ──────────────────────────────────────── */
+    .who-wrap {
+      max-width: 1160px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start;
+    }
+    .prose h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.5rem; font-weight: 700; margin-bottom: 22px;
+      color: var(--t1);
+    }
+    .prose p {
+      font-size: 0.96rem; color: var(--t2);
+      line-height: 1.8; margin-bottom: 18px;
+    }
+    .prose strong { color: var(--gold); font-weight: 600; }
+    .prose em { color: var(--t1); font-style: italic; }
+    .fact-box {
+      background: var(--gold-dim);
+      border: 1px solid var(--gold-border);
+      border-radius: 14px; padding: 20px 24px;
+      margin-top: 28px;
+    }
+    .fact-box .fb-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem; letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--gold);
+      margin-bottom: 8px; display: block;
+    }
+    .fact-box p {
+      font-size: 0.88rem; color: var(--t2); line-height: 1.6; margin: 0;
+    }
+    .stat-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    }
+    .stat-card {
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 16px; padding: 26px;
+      backdrop-filter: blur(16px);
+      transition: border-color 0.3s ease;
+    }
+    .stat-card:hover { border-color: var(--line-gold); }
+    .stat-big {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2.6rem; font-weight: 700; color: var(--gold);
+      line-height: 1; display: block; margin-bottom: 10px;
+    }
+    .stat-card p { font-size: 0.84rem; color: var(--t2); line-height: 1.5; margin: 0; }
+    @media (max-width: 920px) {
+      .who-wrap { grid-template-columns: 1fr; }
+      .stat-grid { grid-template-columns: repeat(4,1fr); }
+    }
+    @media (max-width: 640px) { .stat-grid { grid-template-columns: repeat(2,1fr); } }
+
+    /* ─── Vrste gladijatora ────────────────────────────────── */
+    .types-grid {
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: 18px; max-width: 1180px; margin: 0 auto;
+    }
+    .type-card {
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 18px; padding: 32px;
+      position: relative; overflow: hidden;
+      transition: transform 0.35s ease, border-color 0.35s ease;
+    }
+    .type-card::after {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      opacity: 0; transition: opacity 0.35s;
+    }
+    .type-card:hover { transform: translateY(-6px); border-color: var(--line-gold); }
+    .type-card:hover::after { opacity: 1; }
+    .tc-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem; letter-spacing: 0.25em;
+      color: var(--gold); margin-bottom: 10px; display: block;
+    }
+    .tc-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.3rem; font-weight: 700; margin-bottom: 6px;
+    }
+    .tc-latin {
+      font-style: italic; font-size: 0.8rem; color: var(--t3);
+      margin-bottom: 16px; display: block;
+    }
+    .tc-desc {
+      font-size: 0.86rem; color: var(--t2); line-height: 1.62; margin-bottom: 22px;
+    }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+    .tag {
+      background: rgba(var(--rgb),0.09);
+      border: 1px solid rgba(var(--rgb),0.22);
+      color: var(--gold); font-size: 0.7rem;
+      padding: 3px 10px; border-radius: 20px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .tc-vs {
+      padding-top: 16px; border-top: 1px solid var(--line);
+      font-size: 0.78rem; color: var(--t3);
+    }
+    .tc-vs strong { color: var(--t2); }
+    @media (max-width: 1040px) { .types-grid { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 640px)  { .types-grid { grid-template-columns: 1fr; } }
+
+    /* ─── Trening ──────────────────────────────────────────── */
+    .training-wrap {
+      max-width: 1160px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 56px;
+    }
+    .tl { display: flex; flex-direction: column; }
+    .tl-item { display: flex; gap: 20px; position: relative; }
+    .tl-item:not(:last-child)::after {
+      content: ''; position: absolute;
+      left: 19px; top: 44px; bottom: 0;
+      width: 1px; background: var(--line);
+    }
+    .tl-dot {
+      width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+      background: rgba(var(--rgb),0.1);
+      border: 1px solid var(--line-gold);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem;
+    }
+    .tl-body { padding-bottom: 36px; }
+    .tl-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem; color: var(--gold);
+      letter-spacing: 0.18em; margin-bottom: 6px; display: block;
+    }
+    .tl-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1rem; font-weight: 600; margin-bottom: 8px;
+    }
+    .tl-body p { font-size: 0.87rem; color: var(--t2); line-height: 1.6; }
+    .aside-col { display: flex; flex-direction: column; gap: 18px; }
+    .a-card {
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 16px; padding: 26px;
+      backdrop-filter: blur(16px);
+    }
+    .a-card h4 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.95rem; font-weight: 600;
+      color: var(--gold); margin-bottom: 14px;
+    }
+    .a-card p { font-size: 0.86rem; color: var(--t2); line-height: 1.65; }
+    .a-card ul { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+    .a-card li {
+      font-size: 0.85rem; color: var(--t2);
+      padding-left: 18px; position: relative; line-height: 1.5;
+    }
+    .a-card li::before { content: '—'; position: absolute; left: 0; color: var(--gold); }
+    @media (max-width: 920px) { .training-wrap { grid-template-columns: 1fr; } }
+
+    /* ─── Dan na igrama ────────────────────────────────────── */
+    .phases {
+      max-width: 1160px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(3,1fr);
+      border: 1px solid var(--line); border-radius: 20px; overflow: hidden;
+    }
+    .ph {
+      padding: 44px 36px; border-right: 1px solid var(--line);
+      position: relative;
+    }
+    .ph:last-child { border-right: none; }
+    .ph::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      opacity: 0.35;
+    }
+    .ph-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem; letter-spacing: 0.25em;
+      text-transform: uppercase; color: var(--gold);
+      margin-bottom: 14px; display: block;
+    }
+    .ph-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.2rem; font-weight: 700; margin-bottom: 8px;
+    }
+    .ph-latin {
+      font-style: italic; font-size: 0.8rem; color: var(--t3);
+      margin-bottom: 16px; display: block;
+    }
+    .ph-desc { font-size: 0.87rem; color: var(--t2); line-height: 1.68; }
+    @media (max-width: 860px) {
+      .phases { grid-template-columns: 1fr; }
+      .ph { border-right: none; border-bottom: 1px solid var(--line); }
+      .ph:last-child { border-bottom: none; }
+    }
+
+    /* ─── Slavni gladijatori ───────────────────────────────── */
+    .famous-grid {
+      display: grid; grid-template-columns: repeat(2,1fr);
+      gap: 20px; max-width: 1040px; margin: 0 auto;
+    }
+    .f-card {
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 20px; padding: 38px;
+      display: grid; grid-template-columns: auto 1fr; gap: 26px;
+      align-items: start;
+      transition: border-color 0.3s;
+    }
+    .f-card:hover { border-color: var(--line-gold); }
+    .f-init {
+      width: 58px; height: 58px; border-radius: 50%; flex-shrink: 0;
+      background: rgba(var(--rgb),0.1);
+      border: 1px solid var(--line-gold);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.2rem; font-weight: 700; color: var(--gold);
+    }
+    .f-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.2rem; font-weight: 700; margin-bottom: 4px;
+    }
+    .f-era {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem; color: var(--gold);
+      letter-spacing: 0.14em; margin-bottom: 14px; display: block;
+    }
+    .f-desc { font-size: 0.87rem; color: var(--t2); line-height: 1.65; }
+    @media (max-width: 720px) { .famous-grid { grid-template-columns: 1fr; } }
+
+    /* ─── Presuda ──────────────────────────────────────────── */
+    .verdict-wrap {
+      max-width: 1160px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 72px;
+    }
+    .verdict-prose p {
+      font-size: 0.97rem; color: var(--t2); line-height: 1.8; margin-bottom: 20px;
+    }
+    .verdict-prose strong { color: var(--t1); }
+    .v-cards { display: flex; flex-direction: column; gap: 14px; }
+    .v-card {
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 14px; padding: 22px 26px;
+      display: grid; grid-template-columns: 44px 1fr; gap: 18px; align-items: start;
+      transition: border-color 0.3s;
+    }
+    .v-card:hover { border-color: var(--line-gold); }
+    .v-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: rgba(var(--rgb),0.09);
+      border: 1px solid var(--line-gold);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.15rem; flex-shrink: 0;
+    }
+    .v-card h4 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.95rem; font-weight: 600; margin-bottom: 6px;
+    }
+    .v-card p { font-size: 0.83rem; color: var(--t2); line-height: 1.55; }
+    @media (max-width: 920px) { .verdict-wrap { grid-template-columns: 1fr; } }
+
+    /* ─── Statistike ───────────────────────────────────────── */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(4,1fr);
+      gap: 40px; max-width: 1040px; margin: 0 auto; text-align: center;
+    }
+    .st-num {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(2.5rem,5vw,3.4rem); font-weight: 700;
+      color: var(--gold); display: block;
+      line-height: 1; margin-bottom: 14px;
+      transition: text-shadow 0.3s;
+    }
+    .st-num.counting { text-shadow: 0 0 28px rgba(var(--rgb),0.55); }
+    .st-lbl { font-size: 0.84rem; color: var(--t2); line-height: 1.5; display: block; }
+    @media (max-width: 768px) {
+      .stats-grid { grid-template-columns: repeat(2,1fr); gap: 32px; }
+    }
+
+    /* ─── CTA ──────────────────────────────────────────────── */
+    #cta {
+      position: relative; z-index: 1;
+      text-align: center; padding: 140px 32px;
+      overflow: hidden; border-top: 1px solid var(--line);
+    }
+    .cta-glow {
+      position: absolute; width: 800px; height: 800px;
+      background: var(--gold); border-radius: 50%;
+      filter: blur(160px); opacity: 0.05;
+      top: 50%; left: 50%; transform: translate(-50%,-50%);
+      pointer-events: none;
+    }
+    .cta-inner { position: relative; z-index: 2; }
+    .cta-inner h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(2.4rem,5.5vw,4rem);
+      font-weight: 700; margin-bottom: 20px; line-height: 1.06;
+    }
+    .cta-inner p {
+      color: var(--t2); font-size: 1.06rem;
+      max-width: 560px; margin: 0 auto 48px; line-height: 1.75;
+    }
+
+    /* ─── Footer ───────────────────────────────────────────── */
+    footer {
+      position: relative; z-index: 1;
+      border-top: 1px solid var(--line);
+      padding: 64px 32px 44px; text-align: center;
+    }
+    .ft-brand {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.9rem; font-weight: 700;
+      color: var(--gold); margin-bottom: 28px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .ft-brand span { color: var(--t3); font-weight: 400; }
+    .ft-links {
+      display: flex; justify-content: center; gap: 28px;
+      flex-wrap: wrap; margin-bottom: 32px;
+    }
+    .ft-links a {
+      color: var(--t2); text-decoration: none;
+      font-size: 0.85rem; transition: color 0.2s;
+    }
+    .ft-links a:hover { color: var(--gold); }
+    .ft-copy {
+      color: var(--t3); font-size: 0.72rem;
+      font-family: 'JetBrains Mono', monospace; letter-spacing: 0.06em;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="starscape"></canvas>
+<div id="scrollBar"></div>
+
+<!-- Loader -->
+<div id="loader">
+  <div class="loader-roman">Stari Rim · 80. n. e. – 5. st. n. e.</div>
+  <div class="loader-title">GLADIJATORSKI ŽIVOT</div>
+  <div class="loader-sub">Ratnici arene starog Rima</div>
+  <div class="loader-label">Učitavanje</div>
+  <div class="bar-track"><div class="bar-fill" id="lbar"></div></div>
+</div>
+
+<!-- Navbar -->
+<nav id="nav">
+  <div class="nav-in">
+    <div class="nav-brand">Gladijatorski <span>Život</span></div>
+    <div class="nav-links">
+      <a href="#tko">Podrijetlo</a>
+      <a href="#vrste">Vrste</a>
+      <a href="#trening">Trening</a>
+      <a href="#igre">Igre</a>
+      <a href="#slavni">Legende</a>
+      <a href="#presuda">Presuda</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════ HERO -->
+<section id="hero">
+  <div class="hero-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="grid-over"></div>
+  </div>
+  <div class="hero-content">
+    <span class="hero-kicker">Stari Rim &nbsp;·&nbsp; Doba gladijatora</span>
+    <h1 class="hero-title">Ratnici<br><em>Arene</em></h1>
+    <span class="hero-latin">»Aut vincere aut mori« — Pobijediti ili umrijeti</span>
+    <p class="hero-sub">
+      Rob, zarobljenik, dobrovoljac — gladijator je bio sve to. Istražite njihov brutalni trening, nevjerojatnu hrabrost i spektakl koji je definirao čitavo carstvo.
+    </p>
+    <div class="hero-btns">
+      <a href="#tko" class="btn btn-gold">Počni istraživati</a>
+      <a href="#vrste" class="btn btn-ghost">Vrste gladijatora</a>
+    </div>
+    <div class="scroll-hint">
+      <span>Skrolaj za više</span>
+      <div class="arrow"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ SCROLL FILM -->
+<section class="reel">
+  <div class="reel-sticky">
+    <canvas id="fc"></canvas>
+    <div class="reel-vignette"></div>
+
+    <div class="reel-card" data-show="0.07" data-hide="0.28">
+      <span class="rc-num">01 — KOLOSEUM</span>
+      <h3 class="rc-title">Srce rimskog svijeta</h3>
+      <p class="rc-body">
+        Izgrađen između 70. i 80. g. n. e. za vladavine cara Vespazijana i Tita, Flavijevski amfiteatar bio je najveća pozornica Rima — gdje su se susretali politička moć i javni spektakl.
+      </p>
+      <div class="rc-stat">
+        <span class="rc-big">50.000</span>
+        <span class="rc-lbl">gledatelja pri punom kapacitetu</span>
+      </div>
+    </div>
+
+    <div class="reel-card" data-show="0.35" data-hide="0.57">
+      <span class="rc-num">02 — ARENA</span>
+      <h3 class="rc-title">Pijesak i krv</h3>
+      <p class="rc-body">
+        Riječ <em>arena</em> dolazi od latinske riječi za pijesak — rasut debelo da upije krv i osigura stabilno tlo. Ispod njega prostirala se mreža hodnika i kaveza zvana Hipogej.
+      </p>
+      <div class="rc-stat">
+        <span class="rc-big">83.000</span>
+        <span class="rc-lbl">m² ukupne površine građevine</span>
+      </div>
+    </div>
+
+    <div class="reel-card" data-show="0.65" data-hide="0.90">
+      <span class="rc-num">03 — BAŠTINA</span>
+      <h3 class="rc-title">2.000 godina povijesti</h3>
+      <p class="rc-body">
+        Kroz potrese, srednji vijek i pad carstva — Koloseum traje. Najposjećeniji je antički spomenik na Zemlji i simbol vječnog Rima koji se ne može zaboraviti.
+      </p>
+      <div class="rc-stat">
+        <span class="rc-big">~4M</span>
+        <span class="rc-lbl">posjetitelja svake godine danas</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ TKO SU BILI -->
+<section id="tko" class="sec">
+  <div class="sec-head">
+    <span class="sec-chapter">Poglavlje I.</span>
+    <span class="sec-kicker">Podrijetlo</span>
+    <h2 class="sec-title">Tko su bili gladijatori?</h2>
+    <p class="sec-sub">Ne samo robovi prisiljeni na borbu — gladijatori su bili složena društvena pojava koja je presijecala sve slojeve rimskog društva.</p>
+  </div>
+
+  <div class="who-wrap">
+    <div class="prose">
+      <h3>Iz sjene u svjetlo slave</h3>
+      <p>Većina gladijatora bila su <strong>robovi, ratni zarobljenici ili osuđenici</strong> — ljudi koji su izgubili slobodu i suočavali se s egzistencijom: bori se ili umri. No ovo je samo dio priče.</p>
+      <p>Znatan broj bili su <strong>slobodni dobrovoljci</strong> zvani <em>auctorati</em>, koji su potpisivali ugovore s gladijatorskim školama. Ti su muškarci dragovoljno odricali svoja zakonska prava u zamjenu za redovitu hranu, sklonište, liječničku skrb i mogućnost slave i zarade. Neki su bili veterani, neki avanturisti, a neki jednostavno muškarci s kojima više nije imalo što izgubiti.</p>
+      <p>Čak su se i visoki stalež, pa i sami carevi, povremeno upuštali u arenu. Car <strong>Komodo</strong> famozno je borio u Koloseumu (doduše pod nadzorovanim uvjetima), a nekoliko žena nastupilo je kao <em>gladiatrice</em> — dovoljno da car Septimije Sever na kraju zabrani tu praksu.</p>
+      <p>Svi su ih ujedinjavala zakletva: <em>sacramentum gladiatorium</em> — zavjet da će podnositi gorenje, vezivanje, batinanje i smrt od željeza. Jednom zakleta, gladijatorov život pripadao je areni.</p>
+      <div class="fact-box">
+        <span class="fb-label">Zanimljiva činjenica</span>
+        <p>Slavni liječnik Galen Pergamski radio je u gladijatorskoj školi u Pergamu. Iskustvo liječenja teških rana omogućilo mu je uvide u ljudsku anatomiju koje nije mogao steći na drugi način — i postalo je temelj medicinske znanosti na dugi niz godina.</p>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <span class="stat-big">~70%</span>
+        <p>gladijatora bili su robovi ili ratni zarobljenici — ostatak dobrovoljci</p>
+      </div>
+      <div class="stat-card">
+        <span class="stat-big">5–7</span>
+        <p>borbi godišnje u prosjeku — ne konstantna borba kakvu si zamišljamo</p>
+      </div>
+      <div class="stat-card">
+        <span class="stat-big">3–5</span>
+        <p>godina službe prije nego što je gladijator mogao zaslužiti slobodu</p>
+      </div>
+      <div class="stat-card">
+        <span class="stat-big">~1/5</span>
+        <p>borbi završavalo je smrću — daleko manje nego što mit govori</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="quote-block" style="margin-top:80px;">
+    <p>»Ujutro bacaju ljude lavovima i medvjedima; u podne — gledaocima svojima.«</p>
+    <cite>— Lucije Anej Seneka, Pisma Luciliju</cite>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ VRSTE -->
+<section id="vrste" class="sec">
+  <div class="sec-head">
+    <span class="sec-chapter">Poglavlje II.</span>
+    <span class="sec-kicker">Borbene kategorije</span>
+    <h2 class="sec-title">Vrste gladijatora</h2>
+    <p class="sec-sub">Svaka kategorija imala je poseban identitet — oružje, oklop, taktiku i tradicionalne protivnike. Parovi su pažljivo birani radi maksimalnog vizualnog kontrasta i dramskog napetosti.</p>
+  </div>
+
+  <div class="types-grid">
+
+    <div class="type-card">
+      <span class="tc-num">VRSTA I.</span>
+      <div class="tc-name">Murmilo</div>
+      <span class="tc-latin">Murmillo</span>
+      <p class="tc-desc">Klasični teški gladijator. Ime potječe od ribe <em>murma</em> naslikane na jego hrpu. Nosio je veliki pravokutni štit i kratki mač, što ga je činilo sporim ali gotovo neprobojnim. Oslanjao se na fizičku dominaciju i discipliniran legionarski stil borbe.</p>
+      <div class="tags">
+        <span class="tag">Galea (kaciga)</span>
+        <span class="tag">Scutum (veliki štit)</span>
+        <span class="tag">Gladij (kratki mač)</span>
+        <span class="tag">Manica (štitnik ruke)</span>
+      </div>
+      <div class="tc-vs"><strong>Tradicionalni protivnik:</strong> Retiarij, Trakijac, Hoplomah</div>
+    </div>
+
+    <div class="type-card">
+      <span class="tc-num">VRSTA II.</span>
+      <div class="tc-name">Retiarij</div>
+      <span class="tc-latin">Retiarius</span>
+      <p class="tc-desc">Najupečatljiviji gladijator — gotovo bez oklopa, borio se težinskom mrežom i trozupcem. Oslanjao se isključivo na brzinu, spretnost i lukavost. Ako bi izgubio mrežu, njegove su šanse dramatično padale. Publika ga je ili obožavala ili prezirala.</p>
+      <div class="tags">
+        <span class="tag">Rete (mreža)</span>
+        <span class="tag">Fuscina (trozubac)</span>
+        <span class="tag">Pugio (bodež)</span>
+        <span class="tag">Galerus (rameni štitnik)</span>
+      </div>
+      <div class="tc-vs"><strong>Tradicionalni protivnik:</strong> Sekutor — osmišljen isključivo za borbu s Retarijem</div>
+    </div>
+
+    <div class="type-card">
+      <span class="tc-num">VRSTA III.</span>
+      <div class="tc-name">Trakijac</div>
+      <span class="tc-latin">Thraex</span>
+      <p class="tc-desc">Nazvan po Trakiji (današnja Bugarska/Grčka), Trakijac je nosio zakrivljeni kratki mač — <em>sica</em> — dizajniran da se zavuče iza neprijateljevog štita. S malim okruglim štitom bio je okretan i nepredvidiv. Njegov prepoznatljivi zakrivljeni mač bio je odmah prepoznatljiv rimskoj publici.</p>
+      <div class="tags">
+        <span class="tag">Sica (zakrivljeni mač)</span>
+        <span class="tag">Parmula (mali štit)</span>
+        <span class="tag">Visokokresta kaciga</span>
+        <span class="tag">Nazuvci na obje noge</span>
+      </div>
+      <div class="tc-vs"><strong>Tradicionalni protivnik:</strong> Murmilo, Hoplomah</div>
+    </div>
+
+    <div class="type-card">
+      <span class="tc-num">VRSTA IV.</span>
+      <div class="tc-name">Sekutor</div>
+      <span class="tc-latin">Secutor</span>
+      <p class="tc-desc">»Progonitelj« — osmišljen specifično da svlada Retarija. Njegova glatka, okrugla kaciga s malim otvorima za oči sprječavala je hvatanje mreže, a minimalan oklop davao mu je brzinu. Dvoboj Sekutora i Retarija bio je najkoreografiranije nadmetanje u areni.</p>
+      <div class="tags">
+        <span class="tag">Glatka okrugla kaciga</span>
+        <span class="tag">Scutum (štit)</span>
+        <span class="tag">Gladij</span>
+        <span class="tag">Jedan nazubak</span>
+      </div>
+      <div class="tc-vs"><strong>Tradicionalni protivnik:</strong> Isključivo Retarij</div>
+    </div>
+
+    <div class="type-card">
+      <span class="tc-num">VRSTA V.</span>
+      <div class="tc-name">Hoplomah</div>
+      <span class="tc-latin">Hoplomachus</span>
+      <p class="tc-desc">Modeliran po grčkom hoplitu, borio se dugim kopljem i malim okruglim štitom. Kad bi koplje bilo iskorišteno ili slomljeno, izvlačio je kratki mač. Potpuno naziven na obje noge, imao je odličnu zaštitu ali je žrtvovao pokretljivost — što je njegovo koplje davalo prevagu.</p>
+      <div class="tags">
+        <span class="tag">Hasta (koplje)</span>
+        <span class="tag">Parmula (mali štit)</span>
+        <span class="tag">Gladij (rezerva)</span>
+        <span class="tag">Nazuvci obje noge</span>
+      </div>
+      <div class="tc-vs"><strong>Tradicionalni protivnik:</strong> Murmilo, Trakijac</div>
+    </div>
+
+    <div class="type-card">
+      <span class="tc-num">VRSTA VI.</span>
+      <div class="tc-name">Provokator</div>
+      <span class="tc-latin">Provocator</span>
+      <p class="tc-desc">»Izazivač« — jedinstven po tome što se isključivo borio protiv boraca iste klase. Nosio je prepoznatljiv pravokutni prsni oklop (<em>cardiophylax</em>) i vizirsku kacigu, što ga je činilo najsličnijim rimskom legionaru od svih gladijatora. Oprezan, discipliniran i metodičan.</p>
+      <div class="tags">
+        <span class="tag">Cardiophylax (prsni oklop)</span>
+        <span class="tag">Scutum (štit)</span>
+        <span class="tag">Gladij</span>
+        <span class="tag">Vizirska kaciga</span>
+      </div>
+      <div class="tc-vs"><strong>Tradicionalni protivnik:</strong> Isključivo drugi Provokator</div>
+    </div>
+
+    <div class="type-card">
+      <span class="tc-num">VRSTA VII.</span>
+      <div class="tc-name">Dimahej</div>
+      <span class="tc-latin">Dimachaerus</span>
+      <p class="tc-desc">Najrjeđa i najsmionija klasa — borio se s dva mača i bez štita. Lako oklopljen radi maksimalne brzine, bio je čista ofenziva, oslanjajući se na agresivne dvostruke udarce koji bi nadjačali protivnika prije nego što bi ovaj mogao iskoristiti nedostatak obrane.</p>
+      <div class="tags">
+        <span class="tag">Dva gladija (dvojni mačevi)</span>
+        <span class="tag">Samo lagani oklop</span>
+        <span class="tag">Bez štita</span>
+      </div>
+      <div class="tc-vs"><strong>Tradicionalni protivnik:</strong> Razni — smatran izložbenom klasom</div>
+    </div>
+
+    <div class="type-card">
+      <span class="tc-num">VRSTA VIII.</span>
+      <div class="tc-name">Esedarij</div>
+      <span class="tc-latin">Essedarius</span>
+      <p class="tc-desc">Borac s bojnih kola, uveden nakon Cezarovih pohoda u Britaniji. Esedarij je bacio koplja s kola, a zatim sisjao na tlo za izravnu borbu. Rjeđi od pješačkih gladijatora, pojavljivao se uglavnom na velikim carskim igrama i cijenjen je zbog dramatičnog spektakla.</p>
+      <div class="tags">
+        <span class="tag">Pilum (koplje)</span>
+        <span class="tag">Ratna kola</span>
+        <span class="tag">Gladij (pješačka borba)</span>
+      </div>
+      <div class="tc-vs"><strong>Tradicionalni protivnik:</strong> Drugi Esedarij</div>
+    </div>
+
+    <div class="type-card">
+      <span class="tc-num">VRSTA IX.</span>
+      <div class="tc-name">Lakerij</div>
+      <span class="tc-latin">Laquearius</span>
+      <p class="tc-desc">Inačica Retarija — umjesto mreže koristio je laso (<em>laqueus</em>) kojim je hvatao udove ili oružje protivnika, a zatim se približavao bodežom. Još manje oklopljen od Retarija, ovaj borac oslanjao se gotovo isključivo na brzinu, tajming i iznenađenje.</p>
+      <div class="tags">
+        <span class="tag">Laqueus (laso)</span>
+        <span class="tag">Pugio (bodež)</span>
+        <span class="tag">Minimalni oklop</span>
+      </div>
+      <div class="tc-vs"><strong>Tradicionalni protivnik:</strong> Sekutor ili Murmilo</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ TRENING -->
+<section id="trening" class="sec">
+  <div class="sec-head">
+    <span class="sec-chapter">Poglavlje III.</span>
+    <span class="sec-kicker">Ludus — Gladijatorska škola</span>
+    <h2 class="sec-title">Trening i svakodnevica</h2>
+    <p class="sec-sub">Život u gladijatorskoj školi bio je surov — ali i strukturiran, nahranjen i medicinski zbrinut na načine o kojima su obični rimski robovi mogli samo sanjati.</p>
+  </div>
+
+  <div class="training-wrap">
+    <div class="tl">
+      <div class="tl-item">
+        <div class="tl-dot">🌅</div>
+        <div class="tl-body">
+          <span class="tl-time">Svitanje — 05:00</span>
+          <div class="tl-title">Ustajanje i formacija</div>
+          <p>Gladijatori su se budili prije izlaska sunca, skupljali na dvorištu ludusa i počinjali s istezanjem i lakom tjelovježbom pod nadzorom <em>doctora</em> — veterana trenera.</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">⚔️</div>
+        <div class="tl-body">
+          <span class="tl-time">Jutro — 06:00–11:00</span>
+          <div class="tl-title">Vježba oružjem</div>
+          <p>Srž dana. Regruti su počinjali uz <em>palus</em> — drveni stup za treniranje — učeći udarati precizne ciljeve. Napredni borci sparirali su drvenim mačevima i pletenim štitovima, često otežanim radi jačanja snage. Tehnike su se bezbroj puta vježbale: ubod, pariranje, rad nogama, pozicioniranje štita.</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">🌿</div>
+        <div class="tl-body">
+          <span class="tl-time">Podne — 11:00–13:00</span>
+          <div class="tl-title">Gladijatorski obrok</div>
+          <p>Gladijatori su zaslužili nadimak <em>hordearii</em> — »ječmeni ljudi«. Njihova prehrana bila je pretežno ječam, grah, suho voće i pepeo (zbog kalcija). Bogata ugljikohidratima, ova je prehrana gradila sloj potkožnog masnog tkiva koje je štitilo vitalne organe od površinskih posjekotina. Meso su jeli rijetko.</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">🛁</div>
+        <div class="tl-body">
+          <span class="tl-time">Poslijepodne — 13:00–16:00</span>
+          <div class="tl-title">Odmor, kupke i liječnička skrb</div>
+          <p>Svaki ludus zapošljavao je liječnika. Rane su se čistile i odmah tretirale. Slavni Galen Pergamski radio je u ludusima i kredit duguje upravo gladijatorskom iskustvu za razvoj kirurških znanja.</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">🏋️</div>
+        <div class="tl-body">
+          <span class="tl-time">Kasno poslijepodne — 16:00–18:00</span>
+          <div class="tl-title">Kondicioniranje i sparring</div>
+          <p>Druga sesija fokusirala se na fizičku kondiciju — trčanje, hrvanje i puni kontaktni sparring između iskusnih boraca. Novi regruti su promatrali i upijali. Doctor je kritizirao formu i ispravljao navike koje su mogle biti fatalne u pravoj areni.</p>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">🌙</div>
+        <div class="tl-body">
+          <span class="tl-time">Noć uoči borbe</span>
+          <div class="tl-title">Cena libera — Slobodna večera</div>
+          <p>Noć prije borbe bila je <em>cena libera</em> — javna gozba otvorena za sve građane koji su željeli prisustvovati. Dolazile su obitelji. Neki borci su rješavali dugove ili diktirali oporuke. Ujutro — arena.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="aside-col">
+      <div class="a-card">
+        <h4>Četiri carska ludusa u Rimu</h4>
+        <ul>
+          <li><strong>Ludus Magnus</strong> — najveći, podzemnim hodnikom spojen s Koluseumom; primao do 2.000 boraca</li>
+          <li><strong>Ludus Dacicus</strong> — specijaliziran za dački stil borbe, osnovan nakon Trajanovih ratova</li>
+          <li><strong>Ludus Gallicus</strong> — galski stil; jedan od najstarijih</li>
+          <li><strong>Ludus Matutinus</strong> — jutarnja škola za borce s divljim životinjama (<em>venatores</em>)</li>
+        </ul>
+      </div>
+      <div class="a-card">
+        <h4>Rang i hijerarhija</h4>
+        <ul>
+          <li><strong>Tiro</strong> — novak, još u treningu, nije se javno borio</li>
+          <li><strong>Gregarius</strong> — rangirani borac s evidentiranim mečevima</li>
+          <li><strong>Primus palus</strong> — prvoplasiran u školi; onaj kojeg su svi željeli pobijediti radi slave</li>
+          <li><strong>Doctor</strong> — umirovljeni veteran kao trener; jedan od najpoštovanijih u ludusu</li>
+        </ul>
+      </div>
+      <div class="a-card">
+        <h4>Medicinska znanja</h4>
+        <p>Arheološka analiza gladijatorskih kostiju iz Efeza otkrila je zarasle prijelome, kirurške amputacije i dokaze sofisticirane obrade rana — uključujući antiseptičku primjenu, udlaganje kostiju i primitivne oblike operacija zglobova. Gladijatorska medicina bila je vjerojatno najnaprednija u antičkom svijetu.</p>
+      </div>
+      <div class="a-card">
+        <h4>Zarada i nagrade</h4>
+        <p>Pobjednički gladijatori primali su novčane nagrade (<em>palma</em>) od organizatora igara. Uspješni slobodni borci mogli su zaraditi više u jednoj borbi nego što je rimski legionar zarađivao mjesečno. Robovi su novac slali obitelji ili štedjeli za otkup slobode.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ DAN NA IGRAMA -->
+<section id="igre" class="sec">
+  <div class="sec-head">
+    <span class="sec-chapter">Poglavlje IV.</span>
+    <span class="sec-kicker">Munus</span>
+    <h2 class="sec-title">Dan na igrama</h2>
+    <p class="sec-sub">Rimske igre bile su cjelodnevni događaj — pažljivo inscenirani spektakl koji se kretao od krvavog sporta do krvavog sporta, gradeći prema glavnom događaju.</p>
+  </div>
+
+  <div class="phases">
+    <div class="ph">
+      <span class="ph-time">Svitanje — Jutro</span>
+      <div class="ph-title">Lovi na divljač</div>
+      <span class="ph-latin">Venationes</span>
+      <p class="ph-desc">Dan je počinjao lovom na zvijeri — uvježbani borci zvani <em>venatores</em> suočavali su se s lavovima, medvjedima, slonovima, krokodilima i nojevima na posebno ukrašenom podu arene. Egzotične životinje dopremane su iz čitavog carstva. Na inauguralnim igrama Tita 80. g. n. e. za 100 dana ubijeno je 9.000 životinja. Između svake borbe pijesak bi bio pogrnut i doneseni svježi slojevi.</p>
+    </div>
+    <div class="ph">
+      <span class="ph-time">Podne</span>
+      <div class="ph-title">Javne smaknuće</div>
+      <span class="ph-latin">Noxii ad bestias</span>
+      <p class="ph-desc">U podne je većina rimskih građana odlazila na ručak — ono što je ostalo bilo je pogubljenje osuđenih zločinaca u podne. Metode su se razlikovale: neki su bačeni zvijerima, drugi su postavljeni u mitološka priredbe (osuđenik bi mogao igrati Orfeja i biti rastrgnut od medvjeda). Ovo se smatralo zabavom najniže vrste, ali još uvijek dobro posjećenom od onih koji su ostajali.</p>
+    </div>
+    <div class="ph">
+      <span class="ph-time">Poslijepodne</span>
+      <div class="ph-title">Gladijatorske borbe</div>
+      <span class="ph-latin">Munera gladiatoria</span>
+      <p class="ph-desc">Glavni događaj počinjao je u poslijepodnevnoj vrućini. Borci su ulazili u svečanoj povorci — <em>pompa</em> — uz fanfare truba i urlik 50.000 gledatelja. Sudar je pažljivo određen prema težinskim kategorijama, iskustvu i stilu borbe. Sudac (<em>summa rudis</em>) provodio je pravila durante borbe. Kad bi borac pao, publika i <em>editor</em> odlučivali su o njegovoj sudbini. Pobjednici su primali palme, nagrade i počasni krug arene.</p>
+    </div>
+  </div>
+
+  <div class="quote-block" style="margin-top:72px;">
+    <p>»Kruh i igre.« Rimska publika htjela je dvije stvari od svojih vladara: hranu da ne gladuje, i spektakl da zaboravi brigu.</p>
+    <cite>— Juvenal, Satire X (panem et circenses)</cite>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ SLAVNI -->
+<section id="slavni" class="sec">
+  <div class="sec-head">
+    <span class="sec-chapter">Poglavlje V.</span>
+    <span class="sec-kicker">Legende</span>
+    <h2 class="sec-title">Slavni gladijatori</h2>
+    <p class="sec-sub">Neka su imena preživjela 2.000 godina — zapisana u historiografiji, na zidnim natpisima i kamenu. Ovo su bile osobe čija su se djela utisnula u sjećanje.</p>
+  </div>
+
+  <div class="famous-grid">
+    <div class="f-card">
+      <div class="f-init">S</div>
+      <div>
+        <div class="f-name">Spartak</div>
+        <span class="f-era">73–71. pr. Kr. · Klasa Trakijca</span>
+        <p class="f-desc">Najslavniji gladijator u povijesti — ne zbog rekorda u areni, već zbog vođenja Trećeg servijskog rata, najveće pobune robova koju je Rim ikada doživio. Bivši pomoćni vojnik iz Trakije, Spartak je pobjegao iz ludusa Gncija Lentula Batiata u Kapui s 78 suboraca, naposljetku zapovijedajući vojskom od više od 70.000 oslobođenih robova. Porazio je šest rimskih vojski prije nego što ga je Kras slomio 71. pr. Kr. Njegovo tijelo nikada nije pronađeno.</p>
+      </div>
+    </div>
+    <div class="f-card">
+      <div class="f-init">F</div>
+      <div>
+        <div class="f-name">Flamma</div>
+        <span class="f-era">2. st. n. e. · Klasa Sekutora</span>
+        <p class="f-desc">Flammin nadgrobni natpis — pronađen na Siciliji — bilježi 34 borbe: 21 pobjedu, 9 neriješenih i 4 poraza. Ono što ga čini legendarnim jest to da mu je sloboda (<em>rudis</em> — drveni mač slobode) ponuđena četiri puta — i svaki put ju je odbio. Bez obzira na razlog — ponos, ovisnost o areni ili nedostatak života kamo da se vrati — izabrao je nastaviti. Umro je u areni sa 30 godina, slobodan da ode i nikad voljan otići.</p>
+      </div>
+    </div>
+    <div class="f-card">
+      <div class="f-init">K</div>
+      <div>
+        <div class="f-name">Komodo</div>
+        <span class="f-era">177–192. n. e. · Car Rima</span>
+        <p class="f-desc">Car Rima koji je vjerovao da je reinkarnacija Herkula — i dokazivao to u areni. Komodo se borio u Koloseumu stotine puta, uvijek protiv protivnika kojima je naređeno da izgube i koji su dobivali drvene mačeve. Odsijecao je glave nojevima lukovima sa srpastim vrhovima i ubijao ranjene vojnike radi zabave. Senat je blagajni naplaćivao svaku carsku »izvedbu«. Ubijen je 192. g. n. e. od strane hrvača angažiranog u tu svrhu.</p>
+      </div>
+    </div>
+    <div class="f-card">
+      <div class="f-init">Sp</div>
+      <div>
+        <div class="f-name">Spikul</div>
+        <span class="f-era">1. st. n. e. · Klasa nepoznata</span>
+        <p class="f-desc">Neronov omiljeni gladijator — nagrađen palačama, robovima i bogatstvom koje je pariralo rimskim senatorima. Spikul je pobijedio toliko borbi da je Neron osobno prisustvovao njegovim dvobojima i obasipao ga darovima. Kad je Neron zbačen i pobjegao iz Rima 68. g. n. e., navodno je plačući zazivao Spikula da ga ubije umjesto da bude zarobljen. Nitko ga nije doveo. Neron je morao uzeti vlastiti život uz pomoć oslobođenika.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ PRESUDA -->
+<section id="presuda" class="sec">
+  <div class="sec-head">
+    <span class="sec-chapter">Poglavlje VI.</span>
+    <span class="sec-kicker">Život i smrt</span>
+    <h2 class="sec-title">Presuda</h2>
+    <p class="sec-sub">Kad bi gladijator pao, odluka o životu ili smrti nije bila na protivniku — već na publici i čovjeku koji je platio za nastup.</p>
+  </div>
+
+  <div class="verdict-wrap">
+    <div class="verdict-prose">
+      <p>Moderna mašta predočava rimsku arenu kao klaonicu — no stvarnost je bila proračunatija. Gladijatori su bili skupi ulaganja. Obuka borca od novaka do kompetentnog profesionalca trajala je godinama i stajala je znatnog novca. Ubiti vještog gladijatora bio je financijski gubitak, a <em>lanista</em> (vlasnik škole) zahtijevao je naknadu ako bi mu vlasništvo umrlo.</p>
+      <p>Kad bi gladijator pao i ne mogao nastaviti, podizao je lijevu ruku s <strong>jednim ispruženim prstom</strong> — molba za milost. Publika je glasno izražavala mišljenje. <em>Editor</em> — bogati pokrovitelj koji je organizirao i platio igre — donosio je konačnu odluku, često oblikovanu rikanjem gomile.</p>
+      <div class="quote-block" style="margin:32px 0;">
+        <p>»Gladijator je ležao pred nogama protivnika. Učinio je što je publika tražila od njega — borio se hrabro, iskreno krvario. Sad je bio red na njima.«</p>
+        <cite>— slobodna parafrazacija antičkih izvora</cite>
+      </div>
+      <p>Poznati gestovi »palac gore / palac dolje« uglavnom su moderni mit, populariziran slikarskim djelima 19. stoljeća. Antički izvori opisuju publiku koja pritišće šakama na prsa (<em>pollice verso</em> — »okrenuti palac«) za smrt, i mahanje rupčićima za milost. Točno značenje gesta još uvijek je predmet rasprave povjesničara.</p>
+      <p>Smrt u areni, kad bi i nastupila, pratila je ritual. Od palog borca očekivalo se da golo vrat primio zadnji udarac bez treptanja — zadnji čin hrabrosti koji se od njega tražio. Pojavljivalilisu se sluge prerušeni u Harona i Merkura koji su potvrdili smrt i odnijeli tijelo. Svjež pijesak je posujan. Sljedeća borba je počela.</p>
+    </div>
+
+    <div class="v-cards">
+      <div class="v-card">
+        <div class="v-icon">🏆</div>
+        <div>
+          <h4>Victoria — Pobjeda</h4>
+          <p>Odlučna pobjeda. Pobjednik je primao granu palme, novčanu nagradu i počasni krug pred publikom. Ime mu je dodano na ploču rekorda ispred ludusa.</p>
+        </div>
+      </div>
+      <div class="v-card">
+        <div class="v-icon">🤝</div>
+        <div>
+          <h4>Stans Missus — Časni remi</h4>
+          <p>Kada su oba borca dala sve od sebe i nitko nije mogao nastaviti — ili kad je editor procijenio da je borba bila jednaka i hrabra — obojica su poslana kući živa. Smatralo se časnim za obje strane.</p>
+        </div>
+      </div>
+      <div class="v-card">
+        <div class="v-icon">🙏</div>
+        <div>
+          <h4>Missio — Milost</h4>
+          <p>Najčešći ishod za poraženog borca koji se hrabro borio. Editor bi odobrio milost, a pali gladijator živio bi da se bori još jednom. Publika je snažno utjecala na ovu odluku.</p>
+        </div>
+      </div>
+      <div class="v-card">
+        <div class="v-icon">⚔️</div>
+        <div>
+          <h4>Iugula — Ubij ga</h4>
+          <p>Rezervirano za borce koji su pokazali kukavičluk — bježanje, odbijanje angažmana ili ponizno preklinjanje. Publika bi se okrenula protiv njih, a editor bi signalizirao smrt.</p>
+        </div>
+      </div>
+      <div class="v-card">
+        <div class="v-icon">🪵</div>
+        <div>
+          <h4>Rudis — Sloboda</h4>
+          <p>Nakon godina iznimne službe, gladijatoru se mogao dodijeliti drveni mač — <em>rudis</em> — koji mu daje slobodu. Neki, poput Flamme, odbijali su ga. Drugi bi postajali <em>doctores</em>, trenirajući sljedeću generaciju.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ STATISTIKE -->
+<section id="statistike" class="sec">
+  <div class="sec-head">
+    <span class="sec-chapter">Poglavlje VII.</span>
+    <span class="sec-kicker">U brojevima</span>
+    <h2 class="sec-title">Gladijatorski Rim — u brojkama</h2>
+    <p class="sec-sub">Razmjeri gladijatorskog Rima, izmjereni u stoljećima, gledaocima i borbama.</p>
+  </div>
+  <div class="stats-grid">
+    <div class="s-item" data-t="400" data-s="+">
+      <span class="st-num">0</span>
+      <span class="st-lbl">Godina u kojima je Koloseum priređivao igre</span>
+    </div>
+    <div class="s-item" data-t="50000" data-s="">
+      <span class="st-num">0</span>
+      <span class="st-lbl">Gledatelja koje je Koloseum mogao primiti</span>
+    </div>
+    <div class="s-item" data-t="9" data-s="">
+      <span class="st-num">0</span>
+      <span class="st-lbl">Priznatih glavnih klasa gladijatora</span>
+    </div>
+    <div class="s-item" data-t="34" data-s="">
+      <span class="st-num">0</span>
+      <span class="st-lbl">Evidentiranih borbi Flamme — najdokumentiranog rimskog gladijatora</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ CTA -->
+<section id="cta">
+  <div class="cta-glow"></div>
+  <div class="cta-inner">
+    <div class="ornament"><div class="ornament-line"></div><div class="ornament-dot"></div><div class="ornament-line"></div></div>
+    <h2>Zakoračite u povijest</h2>
+    <p>Gladijatori starog Rima nisu bili ni čudovišta ni žrtve — bili su ljudska bića koja su snalazila u izvanrednom svijetu. Njihova je priča naša da pamtimo.</p>
+    <a href="#hero" class="btn btn-gold" style="font-size:1.05rem;padding:16px 52px;">Natrag na vrh</a>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ FOOTER -->
+<footer>
+  <div class="ornament" style="margin-bottom:32px;">
+    <div class="ornament-line"></div>
+    <div class="ornament-dot"></div>
+    <div class="ornament-line"></div>
+  </div>
+  <div class="ft-brand">Gladijatorski <span>Život</span></div>
+  <div class="ft-links">
+    <a href="#tko">Podrijetlo</a>
+    <a href="#vrste">Vrste</a>
+    <a href="#trening">Trening</a>
+    <a href="#igre">Igre</a>
+    <a href="#slavni">Legende</a>
+    <a href="#presuda">Presuda</a>
+    <a href="#statistike">Statistike</a>
+  </div>
+  <p class="ft-copy">© 2026 Gladijatorski život &nbsp;·&nbsp; Školski projekt iz latinskog i povijesti</p>
+</footer>
+
+<script>
+/* ─── Zvjezdano nebo ─────────────────────────────────── */
+(function(){
+  const c = document.getElementById('starscape');
+  const ctx = c.getContext('2d');
+  const S = [];
+  function init(){
+    const d = devicePixelRatio||1;
+    c.width  = innerWidth*d; c.height = innerHeight*d;
+    c.style.width = innerWidth+'px'; c.style.height = innerHeight+'px';
+    ctx.scale(d,d);
+    S.length=0;
+    for(let i=0;i<170;i++) S.push({
+      x:Math.random()*innerWidth, y:Math.random()*innerHeight,
+      r:Math.random()*1.1+0.3,
+      o:Math.random()*0.55+0.15,
+      dx:(Math.random()-.5)*.016, dy:(Math.random()-.5)*.008,
+      ts:Math.random()*.0011+.0004, tp:Math.random()*Math.PI*2
+    });
+  }
+  function draw(){
+    ctx.clearRect(0,0,innerWidth,innerHeight);
+    const now=Date.now();
+    S.forEach(s=>{
+      s.x+=s.dx; s.y+=s.dy;
+      if(s.x<0)s.x=innerWidth; if(s.x>innerWidth)s.x=0;
+      if(s.y<0)s.y=innerHeight; if(s.y>innerHeight)s.y=0;
+      const op=Math.max(0,s.o+Math.sin(now*s.ts+s.tp)*.26);
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,255,255,${op})`; ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  init(); addEventListener('resize',init); draw();
+})();
+
+/* ─── Frames ──────────────────────────────────────────── */
+const N=120, imgs=[];
+let loaded=0;
+const lbar=document.getElementById('lbar');
+const loader=document.getElementById('loader');
+
+function allLoaded(){
+  loader.style.opacity='0';
+  setTimeout(()=>loader.style.display='none',800);
+  drawF(0);
+}
+
+for(let i=1;i<=N;i++){
+  const img=new Image();
+  img.src=`frames/frame_${String(i).padStart(4,'0')}.jpg`;
+  img.onload=img.onerror=()=>{
+    lbar.style.width=(++loaded/N*100)+'%';
+    if(loaded===N) allLoaded();
+  };
+  imgs.push(img);
+}
+
+/* ─── Canvas ──────────────────────────────────────────── */
+const fc=document.getElementById('fc');
+const fctx=fc.getContext('2d');
+let cur=-1;
+
+function resFC(){
+  const d=devicePixelRatio||1;
+  fc.width=innerWidth*d; fc.height=innerHeight*d;
+  fc.style.width=innerWidth+'px'; fc.style.height=innerHeight+'px';
+  if(cur>=0) drawF(cur);
+}
+
+function drawF(i){
+  const img=imgs[i];
+  if(!img||!img.complete||!img.naturalWidth) return;
+  const cw=fc.width, ch=fc.height;
+  fctx.clearRect(0,0,cw,ch);
+  const ir=img.naturalWidth/img.naturalHeight, cr=cw/ch;
+  let dw,dh,dx,dy;
+  if(innerWidth>768){
+    if(cr>ir){dw=cw;dh=cw/ir;}else{dh=ch;dw=ch*ir;}
+  } else {
+    const z=1.2;
+    if(cr>ir){dh=ch*z;dw=dh*ir;}else{dw=cw*z;dh=dw/ir;}
+  }
+  dx=(cw-dw)/2; dy=(ch-dh)/2;
+  fctx.drawImage(img,dx,dy,dw,dh);
+}
+
+addEventListener('resize',resFC); resFC();
+
+/* ─── Scroll ──────────────────────────────────────────── */
+const reel  = document.querySelector('.reel');
+const sbar  = document.getElementById('scrollBar');
+const nav   = document.getElementById('nav');
+const cards = document.querySelectorAll('.reel-card');
+
+const HOLD=560; let snapping=false;
+const zones=Array.from(cards).map(c=>({
+  show:parseFloat(c.dataset.show),
+  hide:parseFloat(c.dataset.hide),
+  done:false
+}));
+
+function updateCards(p){
+  cards.forEach((card,i)=>{
+    const z=zones[i];
+    const vis=p>=z.show&&p<=z.hide;
+    card.classList.toggle('on',vis);
+    if(vis&&!z.done&&!snapping){
+      z.done=true; snapping=true;
+      document.body.style.overflow='hidden';
+      setTimeout(()=>{document.body.style.overflow='';snapping=false;},HOLD);
+    }
+    if(!vis) z.done=false;
+  });
+}
+
+let tick=false;
+addEventListener('scroll',()=>{
+  if(!tick){
+    requestAnimationFrame(()=>{
+      const total=document.body.scrollHeight-innerHeight;
+      sbar.style.width=(total>0?scrollY/total*100:0)+'%';
+      nav.classList.toggle('scrolled',scrollY>80);
+
+      const rect=reel.getBoundingClientRect();
+      const sh=reel.offsetHeight-innerHeight;
+      const p=Math.min(1,Math.max(0,-rect.top/sh));
+      const fi=Math.min(N-1,Math.floor(p*N));
+      if(fi!==cur){cur=fi;drawF(fi);}
+      updateCards(p);
+      tick=false;
+    });
+    tick=true;
+  }
+},{passive:true});
+
+/* ─── Count-up ────────────────────────────────────────── */
+function expo(t){return t===1?1:1-Math.pow(2,-10*t);}
+function countUp(el,target,suf,dur){
+  const t0=performance.now();
+  el.classList.add('counting');
+  function f(now){
+    const p=Math.min((now-t0)/dur,1), v=expo(p)*target;
+    el.textContent=(target%1===0?Math.floor(v).toLocaleString('hr'):v.toFixed(1))+suf;
+    if(p<1) requestAnimationFrame(f);
+    else{el.textContent=target.toLocaleString('hr')+suf;el.classList.remove('counting');}
+  }
+  requestAnimationFrame(f);
+}
+
+new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting) return;
+    e.target.querySelectorAll('.s-item').forEach((item,i)=>{
+      setTimeout(()=>{
+        countUp(
+          item.querySelector('.st-num'),
+          parseFloat(item.dataset.t),
+          item.dataset.s||'',
+          2400
+        );
+      },i*220);
+    });
+    obs.unobserve(e.target);
+  });
+},{threshold:0.3}).observe(document.getElementById('statistike').querySelector('.stats-grid'));
+</script>
+</body>
+</html>
