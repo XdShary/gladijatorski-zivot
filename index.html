@@ -1379,7 +1379,7 @@ function countUp(el,target,suf,dur){
   requestAnimationFrame(f);
 }
 
-new IntersectionObserver(entries=>{
+const specObs=new IntersectionObserver(entries=>{
   entries.forEach(e=>{
     if(!e.isIntersecting) return;
     e.target.querySelectorAll('.s-item').forEach((item,i)=>{
@@ -1392,9 +1392,60 @@ new IntersectionObserver(entries=>{
         );
       },i*220);
     });
-    obs.unobserve(e.target);
+    specObs.unobserve(e.target);
   });
 },{threshold:0.3}).observe(document.getElementById('statistike').querySelector('.stats-grid'));
+</script>
+
+<script type="module">
+import { animate, inView } from 'https://esm.sh/motion@11'
+const ease = [0.22, 1, 0.36, 1]
+const q = (s, ctx = document) => [...ctx.querySelectorAll(s)]
+const UP = 'translateY(30px)', LEFT = 'translateX(-28px)'
+function hide(sel, t = UP) {
+  q(sel).forEach(el => { el.style.opacity = '0'; el.style.transform = t })
+}
+hide('.hero-kicker, h1.hero-title, .hero-latin, .hero-sub, .hero-btns, .scroll-hint')
+hide('.sec-chapter, .sec-kicker, h2.sec-title, .sec-sub')
+hide('.prose h3, .prose p, .fact-box')
+hide('.verdict-prose p')
+hide('.stat-card, .type-card, .a-card, .ph, .f-card, .v-card, .quote-block, .s-item')
+hide('.cta-inner > *')
+hide('.tl-item', LEFT)
+function up(el, delay = 0) {
+  const a = animate(el,
+    { opacity: [0, 1], transform: [UP, 'translateY(0px)'] },
+    { duration: 0.7, delay, easing: ease })
+  a.finished?.then(() => { el.style.opacity = '1'; el.style.transform = '' }).catch(()=>{})
+  return a
+}
+function left(el, delay = 0) {
+  const a = animate(el,
+    { opacity: [0, 1], transform: [LEFT, 'translateX(0px)'] },
+    { duration: 0.65, delay, easing: ease })
+  a.finished?.then(() => { el.style.opacity = '1'; el.style.transform = '' }).catch(()=>{})
+  return a
+}
+const m = { margin: '0px 0px -60px 0px' }
+q('.hero-kicker, h1.hero-title, .hero-latin, .hero-sub, .hero-btns, .scroll-hint')
+  .forEach((el, i) => up(el, 0.2 + i * 0.12))
+q('.sec-head').forEach(head =>
+  inView(head, () => [...head.children].forEach((el, i) => up(el, i * 0.1)), m))
+q('.prose, .verdict-prose').forEach(block =>
+  inView(block, () => q('h3, p, .fact-box', block).forEach((el, i) => up(el, i * 0.09)), m))
+;[
+  ['.stat-grid', '.stat-card'], ['.types-grid', '.type-card'],
+  ['.famous-grid', '.f-card'], ['.v-cards', '.v-card'],
+  ['.stats-grid', '.s-item'], ['.aside-col', '.a-card'],
+].forEach(([parent, child]) =>
+  q(parent).forEach(ctx =>
+    inView(ctx, () => q(child, ctx).forEach((el, i) => up(el, i * 0.09)), m)))
+inView('.phases', ({ target }) => q('.ph', target).forEach((el, i) => up(el, i * 0.14)), m)
+q('.tl').forEach(tl =>
+  inView(tl, () => q('.tl-item', tl).forEach((el, i) => left(el, i * 0.12)), m))
+q('.quote-block').forEach(el => inView(el, () => up(el), m))
+inView('.cta-inner', ({ target }) =>
+  q('h2, p, a.btn', target).forEach((el, i) => up(el, i * 0.13)), m)
 </script>
 </body>
 </html>
