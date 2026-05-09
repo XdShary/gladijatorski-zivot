@@ -702,38 +702,6 @@
     .sd:hover { background: rgba(var(--rgb),0.5); }
     @media (max-width: 768px) { #sec-dots { display: none; } }
 
-    /* ─── Verdict vote ──────────────────────────────────────── */
-    .verdict-vote {
-      margin-top: 80px; text-align: center; padding: 64px 32px 0;
-      border-top: 1px solid var(--line);
-    }
-    .vv-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.68rem; letter-spacing: 0.32em;
-      text-transform: uppercase; color: var(--t3);
-      margin-bottom: 36px; display: block;
-    }
-    .vv-btns { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
-    .vv-btn {
-      display: flex; flex-direction: column; align-items: center; gap: 12px;
-      background: var(--card); border: 1px solid var(--line);
-      border-radius: 20px; padding: 36px 56px;
-      font-family: 'Space Grotesk', sans-serif; color: var(--t1);
-      transition: all 0.3s ease; cursor: pointer;
-    }
-    .vv-btn:hover { border-color: var(--line-gold); transform: translateY(-5px); }
-    .vv-emoji { font-size: 3rem; line-height: 1; display: block; }
-    .vv-text { font-size: 0.88rem; font-weight: 600; letter-spacing: 0.03em; }
-    .vv-result {
-      margin-top: 40px; min-height: 48px;
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 1.35rem; font-weight: 700; color: var(--gold);
-      opacity: 0; transition: opacity 0.5s ease;
-      font-style: italic;
-    }
-    .vv-result.show { opacity: 1; }
-    #btn-missio.chosen { border-color: #4ade80; box-shadow: 0 0 36px rgba(74,222,128,0.2); }
-    #btn-iugula.chosen { border-color: #f87171; box-shadow: 0 0 36px rgba(248,113,113,0.2); }
   </style>
 </head>
 <body>
@@ -1254,20 +1222,6 @@
     </div>
   </div>
 
-  <div class="verdict-vote">
-    <span class="vv-label">Kako biste vi presudili?</span>
-    <div class="vv-btns">
-      <button class="vv-btn" id="btn-missio">
-        <span class="vv-emoji">👍</span>
-        <span class="vv-text">Missio — Milost</span>
-      </button>
-      <button class="vv-btn" id="btn-iugula">
-        <span class="vv-emoji">👎</span>
-        <span class="vv-text">Iugula — Smrt</span>
-      </button>
-    </div>
-    <div class="vv-result" id="vv-result"></div>
-  </div>
 </section>
 
 <!-- ═══════════════════════════════════════ STATISTIKE -->
@@ -1635,26 +1589,6 @@ inView('.cta-inner', ({ target }) =>
   secs.forEach(s=>obs.observe(s));
 })();
 
-/* ─── Verdict vote ─────────────────────────────────────── */
-(function(){
-  const missio=document.getElementById('btn-missio');
-  const iugula=document.getElementById('btn-iugula');
-  const res=document.getElementById('vv-result');
-  if(!missio||!iugula||!res) return;
-  const msgs={
-    missio:['Missio! Publika je zadovoljna — borac živi!','Editor kimne glavom. Gladijator ustaje s pijeska.','Hrabrost je nagrađena. Ostat će živjeti.'],
-    iugula:['Iugula! Gomila zahtijeva krv!','Palac okrenut. Nema milosti danas.','Arena zapada u tišinu. Kraj je blizu.']
-  };
-  function vote(type,btn,other){
-    if(btn.classList.contains('chosen')) return;
-    btn.classList.add('chosen'); other.classList.remove('chosen');
-    const pool=msgs[type];
-    res.textContent=pool[Math.floor(Math.random()*pool.length)];
-    res.classList.add('show');
-  }
-  missio.addEventListener('click',()=>vote('missio',missio,iugula));
-  iugula.addEventListener('click',()=>vote('iugula',iugula,missio));
-})();
 </script>
 </body>
 </html>
