@@ -721,6 +721,119 @@
     }
     @media (max-width: 768px) { #to-top { bottom: 20px; right: 16px; } }
 
+    /* ══════════════════════════════════════════════════════
+       SITE-WIDE ANIMATIONS
+       ══════════════════════════════════════════════════════ */
+
+    /* 1 — Hero gold title shimmer ──────────────────────── */
+    @keyframes shimmer-gold {
+      0%   { background-position:  200% center; }
+      100% { background-position: -200% center; }
+    }
+    h1.hero-title em {
+      background: linear-gradient(90deg,
+        var(--gold) 0%, var(--gold-light) 30%, #fffde0 50%,
+        var(--gold-light) 70%, var(--gold) 100%);
+      background-size: 260% auto;
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent; color: transparent;
+      animation: shimmer-gold 3.5s linear infinite;
+    }
+
+    /* 2 — Card hover glint sweep ───────────────────────── */
+    @keyframes glint-sweep {
+      from { transform: translateX(-150%); }
+      to   { transform: translateX(150%);  }
+    }
+    .f-card, .a-card, .stat-card, .v-card { position: relative; overflow: hidden; }
+    .type-card::before, .f-card::before, .a-card::before,
+    .stat-card::before, .v-card::before {
+      content: ''; position: absolute; top: 0; left: 0;
+      width: 55%; height: 100%; z-index: 1; pointer-events: none;
+      background: linear-gradient(105deg,
+        transparent 20%, rgba(255,255,255,0.07) 50%, transparent 80%);
+      transform: translateX(-150%);
+    }
+    .type-card:hover::before, .f-card:hover::before, .a-card:hover::before,
+    .stat-card:hover::before, .v-card:hover::before {
+      animation: glint-sweep 0.65s ease forwards;
+    }
+
+    /* 3 — CTA glow breathe ─────────────────────────────── */
+    @keyframes breathe {
+      0%, 100% { opacity: 0.05; transform: translate(-50%,-50%) scale(1);   }
+      50%       { opacity: 0.10; transform: translate(-50%,-50%) scale(1.1); }
+    }
+    .cta-glow { animation: breathe 5s ease-in-out infinite; }
+
+    /* 4 — Scroll-progress bar shimmer ──────────────────── */
+    @keyframes bar-shimmer {
+      from { background-position: 0%   center; }
+      to   { background-position: 200% center; }
+    }
+    #scrollBar {
+      background: linear-gradient(90deg,
+        var(--gold), var(--gold-light), var(--gold),
+        var(--gold-light), var(--gold));
+      background-size: 300% auto;
+      animation: bar-shimmer 2.5s linear infinite;
+    }
+
+    /* 5 — Active dot ring pulse ────────────────────────── */
+    @keyframes ring-out {
+      0%   { transform: scale(1);   opacity: 0.7; }
+      100% { transform: scale(2.8); opacity: 0;   }
+    }
+    .sd.active::after {
+      content: ''; position: absolute; inset: -3px; border-radius: 50%;
+      border: 1px solid rgba(var(--rgb), 0.5);
+      animation: ring-out 1.6s ease-out infinite;
+    }
+
+    /* 6 — Timeline vertical line draw ──────────────────── */
+    .tl-item:not(:last-child)::after { transform-origin: top; transform: scaleY(0); }
+    .tl.lines-drawn .tl-item:not(:last-child)::after {
+      transform: scaleY(1);
+      transition: transform 0.7s cubic-bezier(0.16,1,0.3,1);
+    }
+    .tl.lines-drawn .tl-item:nth-child(1):not(:last-child)::after { transition-delay: 0.10s; }
+    .tl.lines-drawn .tl-item:nth-child(2):not(:last-child)::after { transition-delay: 0.35s; }
+    .tl.lines-drawn .tl-item:nth-child(3):not(:last-child)::after { transition-delay: 0.60s; }
+    .tl.lines-drawn .tl-item:nth-child(4):not(:last-child)::after { transition-delay: 0.85s; }
+    .tl.lines-drawn .tl-item:nth-child(5):not(:last-child)::after { transition-delay: 1.10s; }
+
+    /* 7 — Section title underline draw ─────────────────── */
+    h2.sec-title::after {
+      content: ''; display: block;
+      width: 90px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 16px auto 0;
+      transform: scaleX(0); transform-origin: center;
+      transition: transform 0.8s cubic-bezier(0.16,1,0.3,1) 0.5s;
+    }
+    .sec-head.drawn h2.sec-title::after { transform: scaleX(1); }
+
+    /* 8 — Loader bar glow pulse ────────────────────────── */
+    @keyframes bar-glow {
+      0%, 100% { box-shadow: 0 0 8px  rgba(var(--rgb), 0.4); }
+      50%       { box-shadow: 0 0 22px rgba(var(--rgb), 0.9); }
+    }
+    .bar-fill { animation: bar-glow 1.2s ease-in-out infinite; }
+
+    /* 9 — Hero kicker letter-spacing breathe ───────────── */
+    @keyframes kicker-breath {
+      0%, 100% { letter-spacing: 0.38em; }
+      50%       { letter-spacing: 0.44em; }
+    }
+    .hero-kicker { animation: kicker-breath 4s ease-in-out infinite; }
+
+    /* 10 — Fact-box border glow ────────────────────────── */
+    @keyframes fact-pulse {
+      0%, 100% { border-color: rgba(var(--rgb), 0.22); }
+      50%       { border-color: rgba(var(--rgb), 0.50); }
+    }
+    .fact-box { animation: fact-pulse 3s ease-in-out infinite; }
+
   </style>
 </head>
 <body>
@@ -1654,6 +1767,26 @@ inView('.cta-inner', ({ target }) =>
       setTimeout(()=>{ btn.style.transition=''; },450);
     });
   });
+})();
+
+/* ─── Timeline line draw ───────────────────────────────── */
+(function(){
+  const o=new IntersectionObserver(entries=>{
+    entries.forEach(en=>{
+      if(en.isIntersecting){ en.target.classList.add('lines-drawn'); o.unobserve(en.target); }
+    });
+  },{threshold:0.2});
+  document.querySelectorAll('.tl').forEach(t=>o.observe(t));
+})();
+
+/* ─── Section title underline ──────────────────────────── */
+(function(){
+  const o=new IntersectionObserver(entries=>{
+    entries.forEach(en=>{
+      if(en.isIntersecting){ en.target.classList.add('drawn'); o.unobserve(en.target); }
+    });
+  },{threshold:0.4});
+  document.querySelectorAll('.sec-head').forEach(h=>o.observe(h));
 })();
 
 </script>
