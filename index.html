@@ -651,12 +651,97 @@
       color: var(--t3); font-size: 0.72rem;
       font-family: 'JetBrains Mono', monospace; letter-spacing: 0.06em;
     }
+
+    /* ─── Custom cursor ────────────────────────────────────── */
+    @media (pointer: fine) {
+      body, a, button, .btn, .type-card, .f-card, .v-card,
+      .stat-card, .a-card, .vv-btn { cursor: none; }
+    }
+    #cur-glow {
+      position: fixed; pointer-events: none; z-index: 99998;
+      width: 44px; height: 44px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(var(--rgb),0.38) 0%, transparent 70%);
+      transform: translate(-50%,-50%); will-change: left,top;
+      transition: width 0.3s ease, height 0.3s ease;
+    }
+    #cur-dot {
+      position: fixed; pointer-events: none; z-index: 99999;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--gold); transform: translate(-50%,-50%);
+      will-change: left,top;
+      transition: transform 0.25s ease, width 0.25s ease, height 0.25s ease;
+    }
+    #cur-dot.big { transform: translate(-50%,-50%) scale(2.8); }
+
+    /* ─── Section progress dots ────────────────────────────── */
+    #sec-dots {
+      position: fixed; right: 20px; top: 50%; transform: translateY(-50%);
+      z-index: 500; display: flex; flex-direction: column; gap: 10px;
+    }
+    .sd {
+      display: block; width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(255,255,255,0.18); text-decoration: none;
+      transition: all 0.3s ease; position: relative;
+    }
+    .sd::before {
+      content: attr(data-label);
+      position: absolute; right: calc(100% + 14px); top: 50%;
+      transform: translateY(-50%); white-space: nowrap;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+      letter-spacing: 0.12em; color: var(--gold);
+      background: rgba(9,8,6,0.88); padding: 4px 10px;
+      border-radius: 6px; border: 1px solid var(--line-gold);
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .sd:hover::before { opacity: 1; }
+    .sd.active {
+      background: var(--gold); width: 8px; height: 8px;
+      box-shadow: 0 0 10px rgba(var(--rgb),0.6);
+    }
+    .sd.active::before { opacity: 1; }
+    .sd:hover { background: rgba(var(--rgb),0.5); }
+    @media (max-width: 768px) { #sec-dots { display: none; } }
+
+    /* ─── Verdict vote ──────────────────────────────────────── */
+    .verdict-vote {
+      margin-top: 80px; text-align: center; padding: 64px 32px 0;
+      border-top: 1px solid var(--line);
+    }
+    .vv-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem; letter-spacing: 0.32em;
+      text-transform: uppercase; color: var(--t3);
+      margin-bottom: 36px; display: block;
+    }
+    .vv-btns { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+    .vv-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 20px; padding: 36px 56px;
+      font-family: 'Space Grotesk', sans-serif; color: var(--t1);
+      transition: all 0.3s ease; cursor: pointer;
+    }
+    .vv-btn:hover { border-color: var(--line-gold); transform: translateY(-5px); }
+    .vv-emoji { font-size: 3rem; line-height: 1; display: block; }
+    .vv-text { font-size: 0.88rem; font-weight: 600; letter-spacing: 0.03em; }
+    .vv-result {
+      margin-top: 40px; min-height: 48px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.35rem; font-weight: 700; color: var(--gold);
+      opacity: 0; transition: opacity 0.5s ease;
+      font-style: italic;
+    }
+    .vv-result.show { opacity: 1; }
+    #btn-missio.chosen { border-color: #4ade80; box-shadow: 0 0 36px rgba(74,222,128,0.2); }
+    #btn-iugula.chosen { border-color: #f87171; box-shadow: 0 0 36px rgba(248,113,113,0.2); }
   </style>
 </head>
 <body>
 
 <canvas id="starscape"></canvas>
 <div id="scrollBar"></div>
+<div id="cur-glow"></div>
+<div id="cur-dot"></div>
 
 <!-- Loader -->
 <div id="loader">
@@ -1168,6 +1253,21 @@
       </div>
     </div>
   </div>
+
+  <div class="verdict-vote">
+    <span class="vv-label">Kako biste vi presudili?</span>
+    <div class="vv-btns">
+      <button class="vv-btn" id="btn-missio">
+        <span class="vv-emoji">👍</span>
+        <span class="vv-text">Missio — Milost</span>
+      </button>
+      <button class="vv-btn" id="btn-iugula">
+        <span class="vv-emoji">👎</span>
+        <span class="vv-text">Iugula — Smrt</span>
+      </button>
+    </div>
+    <div class="vv-result" id="vv-result"></div>
+  </div>
 </section>
 
 <!-- ═══════════════════════════════════════ STATISTIKE -->
@@ -1405,7 +1505,7 @@ const UP = 'translateY(30px)', LEFT = 'translateX(-28px)'
 function hide(sel, t = UP) {
   q(sel).forEach(el => { el.style.opacity = '0'; el.style.transform = t })
 }
-hide('.hero-kicker, h1.hero-title, .hero-latin, .hero-sub, .hero-btns, .scroll-hint')
+hide('.hero-kicker, h1.hero-title, .hero-sub, .hero-btns, .scroll-hint')
 hide('.sec-chapter, .sec-kicker, h2.sec-title, .sec-sub')
 hide('.prose h3, .prose p, .fact-box')
 hide('.verdict-prose p')
@@ -1427,7 +1527,7 @@ function left(el, delay = 0) {
   return a
 }
 const m = { margin: '0px 0px -60px 0px' }
-q('.hero-kicker, h1.hero-title, .hero-latin, .hero-sub, .hero-btns, .scroll-hint')
+q('.hero-kicker, h1.hero-title, .hero-sub, .hero-btns, .scroll-hint')
   .forEach((el, i) => up(el, 0.2 + i * 0.12))
 q('.sec-head').forEach(head =>
   inView(head, () => [...head.children].forEach((el, i) => up(el, i * 0.1)), m))
@@ -1446,6 +1546,115 @@ q('.tl').forEach(tl =>
 q('.quote-block').forEach(el => inView(el, () => up(el), m))
 inView('.cta-inner', ({ target }) =>
   q('h2, p, a.btn', target).forEach((el, i) => up(el, i * 0.13)), m)
+</script>
+
+<!-- Section progress dots -->
+<nav id="sec-dots" aria-label="Navigacija sekcijama">
+  <a href="#hero"      class="sd" data-label="Početak"></a>
+  <a href="#tko"       class="sd" data-label="Podrijetlo"></a>
+  <a href="#vrste"     class="sd" data-label="Vrste"></a>
+  <a href="#trening"   class="sd" data-label="Trening"></a>
+  <a href="#igre"      class="sd" data-label="Igre"></a>
+  <a href="#slavni"    class="sd" data-label="Legende"></a>
+  <a href="#presuda"   class="sd" data-label="Presuda"></a>
+  <a href="#statistike" class="sd" data-label="Statistike"></a>
+</nav>
+
+<script>
+/* ─── Custom cursor ────────────────────────────────────── */
+(function(){
+  if(window.matchMedia('(pointer: coarse)').matches) return;
+  const glow = document.getElementById('cur-glow');
+  const dot  = document.getElementById('cur-dot');
+  let mx=window.innerWidth/2, my=window.innerHeight/2;
+  let gx=mx, gy=my;
+  glow.style.left=gx+'px'; glow.style.top=gy+'px';
+  dot.style.left=mx+'px';  dot.style.top=my+'px';
+  document.addEventListener('mousemove', e=>{
+    mx=e.clientX; my=e.clientY;
+    dot.style.left=mx+'px'; dot.style.top=my+'px';
+  });
+  (function loop(){
+    gx += (mx-gx)*0.11; gy += (my-gy)*0.11;
+    glow.style.left=gx+'px'; glow.style.top=gy+'px';
+    requestAnimationFrame(loop);
+  })();
+  const hover = document.querySelectorAll('a,button,.btn,.type-card,.f-card,.vv-btn');
+  hover.forEach(el=>{
+    el.addEventListener('mouseenter',()=>{
+      glow.style.width='72px'; glow.style.height='72px';
+      dot.classList.add('big');
+    });
+    el.addEventListener('mouseleave',()=>{
+      glow.style.width='44px'; glow.style.height='44px';
+      dot.classList.remove('big');
+    });
+  });
+})();
+
+/* ─── 3D Card tilt ─────────────────────────────────────── */
+(function(){
+  const TILT=11;
+  document.querySelectorAll('.type-card,.f-card,.a-card,.v-card,.stat-card,.ph').forEach(card=>{
+    card.addEventListener('mousemove',e=>{
+      const r=card.getBoundingClientRect();
+      const x=(e.clientX-r.left)/r.width -0.5;
+      const y=(e.clientY-r.top) /r.height-0.5;
+      card.style.transform=`perspective(700px) rotateY(${x*TILT}deg) rotateX(${-y*TILT}deg) translateZ(6px)`;
+      card.style.transition='transform 0.08s ease,border-color 0.3s ease';
+    });
+    card.addEventListener('mouseleave',()=>{
+      card.style.transform='';
+      card.style.transition='transform 0.55s cubic-bezier(0.16,1,0.3,1),border-color 0.3s ease';
+    });
+  });
+})();
+
+/* ─── Typewriter (hero latin) ──────────────────────────── */
+(function(){
+  const el=document.querySelector('.hero-latin');
+  if(!el) return;
+  const full=el.textContent.trim();
+  el.textContent=''; el.style.opacity='1';
+  let i=0;
+  function type(){ if(i<full.length){ el.textContent+=full[i++]; setTimeout(type,28); } }
+  setTimeout(type, 2300);
+})();
+
+/* ─── Section progress dots ────────────────────────────── */
+(function(){
+  const dots=[...document.querySelectorAll('.sd')];
+  const ids=['hero','tko','vrste','trening','igre','slavni','presuda','statistike'];
+  const secs=ids.map(id=>document.getElementById(id)).filter(Boolean);
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      const d=document.querySelector(`.sd[href="#${e.target.id}"]`);
+      if(d) d.classList.toggle('active',e.isIntersecting);
+    });
+  },{threshold:0.25});
+  secs.forEach(s=>obs.observe(s));
+})();
+
+/* ─── Verdict vote ─────────────────────────────────────── */
+(function(){
+  const missio=document.getElementById('btn-missio');
+  const iugula=document.getElementById('btn-iugula');
+  const res=document.getElementById('vv-result');
+  if(!missio||!iugula||!res) return;
+  const msgs={
+    missio:['Missio! Publika je zadovoljna — borac živi!','Editor kimne glavom. Gladijator ustaje s pijeska.','Hrabrost je nagrađena. Ostat će živjeti.'],
+    iugula:['Iugula! Gomila zahtijeva krv!','Palac okrenut. Nema milosti danas.','Arena zapada u tišinu. Kraj je blizu.']
+  };
+  function vote(type,btn,other){
+    if(btn.classList.contains('chosen')) return;
+    btn.classList.add('chosen'); other.classList.remove('chosen');
+    const pool=msgs[type];
+    res.textContent=pool[Math.floor(Math.random()*pool.length)];
+    res.classList.add('show');
+  }
+  missio.addEventListener('click',()=>vote('missio',missio,iugula));
+  iugula.addEventListener('click',()=>vote('iugula',iugula,missio));
+})();
 </script>
 </body>
 </html>
